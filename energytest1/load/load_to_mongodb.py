@@ -1,35 +1,42 @@
 """
-Reload data to MongoDB with better structure (long format)
+Load data to MongoDB (long format)
 """
 import sys
 import os
 from dotenv import load_dotenv
+import glob
 
 load_dotenv()
 
-# Add load directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'load'))
+# Import from same directory
+from mongodb_loader import MongoDBLoader
 
-from load.mongodb_loader import MongoDBLoader
-
-def reload_data():
+def load_data():
     print("\n" + "="*80)
-    print("MONGODB DATA RELOADER - LONG FORMAT DATA")
+    print("MONGODB DATA LOADER - LONG FORMAT DATA")
     print("="*80)
     
-    # Use the new long format CSV
-    csv_file = "africa_energy_long_format_20251006_210914.csv"
+    # Get the project root directory (parent of load/)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
     
-    # Check if CSV exists
-    if not os.path.exists(csv_file):
-        print(f"\n[ERROR] Long format data file not found: {csv_file}")
+    # Look for the latest long format CSV in project root
+    csv_pattern = os.path.join(project_root, "africa_energy_long_format_*.csv")
+    csv_files = sorted(glob.glob(csv_pattern), reverse=True)
+    
+    if not csv_files:
+        print(f"\n[ERROR] No long format data file found in: {project_root}")
+        print("Please run transform/transform_to_long_format.py first.")
         return False
     
+    # Use the latest file
+    csv_file = csv_files[0]
+    
     print(f"\nConfiguration:")
-    print(f"  Input file: {csv_file}")
+    print(f"  Input file: {os.path.basename(csv_file)}")
     print(f"  Database: energyd2")
     print(f"  Collection: test")
-    print(f"  Clear existing data: YES (will remove old wide-format data)")
+    print(f"  Clear existing data: YES")
     
     print(f"\n{'='*80}")
     
@@ -54,7 +61,7 @@ def reload_data():
         # Prepare documents
         documents = loader.prepare_documents(df)
         
-        # Load data (CLEAR existing wide-format data)
+        # Load data (CLEAR existing data)
         if not loader.load_data(documents, clear_existing=True):
             return False
         
@@ -112,7 +119,7 @@ def reload_data():
             print(f"    Sector: {doc.get('sector')}")
         
         print(f"\n{'='*80}")
-        print("DATA RELOADING COMPLETED SUCCESSFULLY!")
+        print("DATA LOADING COMPLETED SUCCESSFULLY!")
         print(f"{'='*80}")
         print(f"\nDatabase: energyd2")
         print(f"Collection: test")
@@ -133,5 +140,5 @@ def reload_data():
         loader.close()
 
 if __name__ == "__main__":
-    success = reload_data()
+    success = load_data()
     sys.exit(0 if success else 1)

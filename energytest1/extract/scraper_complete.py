@@ -219,8 +219,12 @@ def main():
     print("AFRICA ENERGY PORTAL - COMPREHENSIVE DATA SCRAPER")
     print("="*80)
     
+    # Get the project root directory (parent of extract/)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"africa_energy_complete_{timestamp}.csv"
+    output_file = os.path.join(project_root, f"africa_energy_complete_{timestamp}.csv")
     
     scraper = ComprehensiveAfricaEnergyScraper()
     

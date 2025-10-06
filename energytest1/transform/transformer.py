@@ -165,18 +165,27 @@ def main():
     print("AFRICA ENERGY DATA TRANSFORMATION")
     print("="*80)
     
-    # Input file
-    input_file = "africa_energy_complete_20251006_202004.csv"
+    # Get the project root directory (parent of transform/)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
     
-    # Output file with timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"africa_energy_transformed_{timestamp}.csv"
+    # Look for the latest extracted file in project root
+    import glob
+    extracted_pattern = os.path.join(project_root, "africa_energy_complete_*.csv")
+    extracted_files = sorted(glob.glob(extracted_pattern), reverse=True)
     
-    # Check if input file exists
-    if not os.path.exists(input_file):
-        print(f"\n[ERROR] Input file not found: {input_file}")
-        print("Please make sure the extracted data file is in the current directory.")
+    if not extracted_files:
+        print(f"\n[ERROR] No extracted file found in: {project_root}")
+        print("Please run extract/scraper_complete.py first to extract the data.")
         return False
+    
+    # Use the latest extracted file
+    input_file = extracted_files[0]
+    print(f"\nUsing extracted file: {os.path.basename(input_file)}")
+    
+    # Output file with timestamp in project root
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(project_root, f"africa_energy_transformed_{timestamp}.csv")
     
     # Create transformer
     transformer = EnergyDataTransformer(input_file)

@@ -5,6 +5,7 @@ Each row will become multiple rows - one per year with actual data
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import os
 
 def transform_to_long_format(csv_file):
     """Transform wide format to long format"""
@@ -62,9 +63,26 @@ def transform_to_long_format(csv_file):
 
 
 def main():
-    input_file = "africa_energy_transformed_20251006_204713.csv"
+    # Get the project root directory (parent of transform/)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    
+    # Look for the latest transformed file in project root
+    import glob
+    transformed_pattern = os.path.join(project_root, "africa_energy_transformed_*.csv")
+    transformed_files = sorted(glob.glob(transformed_pattern), reverse=True)
+    
+    if not transformed_files:
+        print(f"\n[ERROR] No transformed file found in: {project_root}")
+        print("Please run transformer.py first to create the wide format CSV.")
+        return None
+    
+    # Use the latest transformed file
+    input_file = transformed_files[0]
+    
+    # Output file will be in project root
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"africa_energy_long_format_{timestamp}.csv"
+    output_file = os.path.join(project_root, f"africa_energy_long_format_{timestamp}.csv")
     
     # Transform
     df_long = transform_to_long_format(input_file)
